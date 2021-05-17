@@ -19,12 +19,16 @@ class _MainScreenState extends State<MainScreen> {
   int numberOfSquares = 460;
   int tickDuration = 500;
   List<int> piece = [];
+  List<int> food = [];
+
   List<int> landed = [];
   Direction currentDirection = Direction.left;
   Direction nextDirection = Direction.none;
 
   void startGame() {
-    piece = [numberOfSquares - 230];
+    piece = [numberOfSquares - 2, numberOfSquares - 3, numberOfSquares - 4];
+
+    food = [numberOfSquares - 5, numberOfSquares - 299, numberOfSquares - 111];
     updateNextDirection(Direction.none);
     Timer.periodic(Duration(milliseconds: tickDuration), (timer) {
       //Set direction
@@ -89,24 +93,20 @@ class _MainScreenState extends State<MainScreen> {
 
       setState(() {
         if (currentDirection == Direction.left) {
-          for (int i = 0; i < piece.length; i++) {
-            piece[i] -= 1;
-          }
+          bodyFollow();
+          piece[0] -= 1;
         }
         if (currentDirection == Direction.right) {
-          for (int i = 0; i < piece.length; i++) {
-            piece[i] += 1;
-          }
+          bodyFollow();
+          piece[0] += 1;
         }
         if (currentDirection == Direction.up) {
-          for (int i = 0; i < piece.length; i++) {
-            piece[i] -= 20;
-          }
+          bodyFollow();
+          piece[0] -= 20;
         }
         if (currentDirection == Direction.down) {
-          for (int i = 0; i < piece.length; i++) {
-            piece[i] += 20;
-          }
+          bodyFollow();
+          piece[0] += 20;
         }
       });
       updateNextDirection(Direction.none);
@@ -114,6 +114,11 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void stack() {}
+  void bodyFollow() {
+    for (int i = piece.length - 1; i > 0; i--) {
+      piece[i] = piece[i - 1];
+    }
+  }
 
   @override
   void initState() {
@@ -138,8 +143,37 @@ class _MainScreenState extends State<MainScreen> {
                 MyPixel currentPixel = MyPixel();
                 if (piece.contains(index)) {
                   currentPixel.color = Colors.white;
+                  if (piece[0] == index) {
+                    currentPixel.color = Colors.yellow;
+                  }
+                } else if (food.contains(index)) {
+                  currentPixel.color = Colors.red;
                 } else {
                   currentPixel.color = Colors.black;
+                }
+
+                if (piece.contains(index) && food.contains(index)) {
+                  switch (currentDirection) {
+                    case Direction.none:
+                      break;
+                    case Direction.left:
+                      piece.insert(0, piece[0] - 1);
+
+                      break;
+                    case Direction.right:
+                      piece.insert(1, piece[0] + 1);
+
+                      break;
+                    case Direction.up:
+                      piece.insert(1, piece[0] + 20);
+
+                      break;
+                    case Direction.down:
+                      piece.insert(1, piece[0] - 20);
+
+                      break;
+                  }
+                  food.remove(index);
                 }
                 return currentPixel;
               },
