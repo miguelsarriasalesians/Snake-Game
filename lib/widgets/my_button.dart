@@ -5,13 +5,14 @@ class MyButton extends StatelessWidget {
   final Color textColor;
   final double fontSize;
   Function function;
+  final Widget icon;
 
-  MyButton({this.text = "P L A Y", this.textColor = Colors.white, this.fontSize = 30, this.function});
+  MyButton({this.text = "P L A Y", this.textColor = Colors.white, this.fontSize = 30, this.function, this.icon});
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: GestureDetector(
+      child: InkWell(
         onTap: () {
           print(this.text);
           function();
@@ -25,13 +26,14 @@ class MyButton extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(20),
                 child: Center(
-                    child: Text(
-                  this.text,
-                  style: TextStyle(
-                    color: this.textColor,
-                    fontSize: this.fontSize,
-                  ),
-                )),
+                    child: icon ??
+                        Text(
+                          this.text,
+                          style: TextStyle(
+                            color: this.textColor,
+                            fontSize: this.fontSize,
+                          ),
+                        )),
               ),
             ),
           ),
