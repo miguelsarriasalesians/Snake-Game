@@ -17,7 +17,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int numberOfSquares = 460;
-  int tickDuration = 500;
+  int tickDuration = 250;
   List<int> piece = [];
   List<int> food = [];
 
@@ -28,16 +28,16 @@ class _MainScreenState extends State<MainScreen> {
   void startGame() {
     piece = [numberOfSquares - 2, numberOfSquares - 3, numberOfSquares - 4];
 
-    food = [numberOfSquares - 5, numberOfSquares - 299, numberOfSquares - 111];
+    food = [
+      numberOfSquares - 5,
+      numberOfSquares - 299,
+      numberOfSquares - 111,
+      numberOfSquares - 333,
+      numberOfSquares - 234,
+      numberOfSquares - 66
+    ];
     updateNextDirection(Direction.none);
     Timer.periodic(Duration(milliseconds: tickDuration), (timer) {
-      //Set direction
-      // if (piece.first % 20 == 0) {
-      //   nextDirection = Direction.right;
-      // } else if (piece.last % 20 == 19) {
-      //   nextDirection = Direction.left;
-      // }
-      //Transformar currentDirection a partir de la nextDirection
       if (nextDirection == Direction.right) {
         switch (currentDirection) {
           case Direction.none:
@@ -81,15 +81,6 @@ class _MainScreenState extends State<MainScreen> {
             break;
         }
       }
-      // else if (piece.any((element) {
-      //   element < 9 && element >= 0;
-      // })) {
-      //   currentDirection == Direction.down;
-      // } else if (piece.any((element) {
-      //   element < 119 && element >= 110;
-      // })) {
-      //   currentDirection == Direction.up;
-      // }
 
       setState(() {
         if (currentDirection == Direction.left) {
@@ -143,13 +134,17 @@ class _MainScreenState extends State<MainScreen> {
                 MyPixel currentPixel = MyPixel();
                 if (piece.contains(index)) {
                   currentPixel.color = Colors.white;
-                  if (piece[0] == index) {
-                    currentPixel.color = Colors.yellow;
-                  }
+                  // if (piece[0] == index) {
+                  //   currentPixel.color = Colors.yellow;
+                  // }
                 } else if (food.contains(index)) {
                   currentPixel.color = Colors.red;
                 } else {
                   currentPixel.color = Colors.black;
+                }
+
+                if (checkSameValuePixels()) {
+                  print("GAME OVER");
                 }
 
                 if (piece.contains(index) && food.contains(index)) {
@@ -157,19 +152,19 @@ class _MainScreenState extends State<MainScreen> {
                     case Direction.none:
                       break;
                     case Direction.left:
-                      piece.insert(0, piece[0] - 1);
+                      piece.add(piece[piece.length - 1] + 1);
 
                       break;
                     case Direction.right:
-                      piece.insert(1, piece[0] + 1);
+                      piece.add(piece[piece.length - 1] - 1);
 
                       break;
                     case Direction.up:
-                      piece.insert(1, piece[0] + 20);
+                      piece.add(piece[piece.length - 1] + 20);
 
                       break;
                     case Direction.down:
-                      piece.insert(1, piece[0] - 20);
+                      piece.add(piece[piece.length - 1] - 20);
 
                       break;
                   }
@@ -225,5 +220,18 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       nextDirection = direction;
     });
+  }
+
+  bool checkSameValuePixels() {
+    bool result = false;
+    List<int> list = [];
+
+    for (int i = 0; i < piece.length; i++) {
+      if (list.contains(piece[i])) {
+        result = true;
+      }
+      list.add(piece[i]);
+    }
+    return result;
   }
 }
