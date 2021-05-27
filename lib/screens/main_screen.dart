@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mucho_invader/widgets/my_button.dart';
@@ -16,36 +18,38 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int numberOfSquares = 460;
-  int tickDuration = 250;
+  int numberOfSquares = 420;
+  int tickDuration = 500;
+  int score = 0;
   List<int> piece = [];
   List<int> food = [];
   List<int> walls = [];
   bool gameOver = false;
   int totalMilliseconds = 0;
   int numberSquaresPerLine = 20;
+  Timer timer;
 
   List<int> landed = [];
   Direction currentDirection = Direction.left;
   Direction nextDirection = Direction.none;
 
   void startGame() {
+    score = 0;
+    food = [];
     generateWalls();
+    generateFood();
     gameOver = false;
-    piece = [numberOfSquares - 185, numberOfSquares - 186, numberOfSquares - 187];
+    piece = [numberOfSquares - 185, numberOfSquares - 186];
 
-    food = [
-      numberOfSquares - 299,
-      numberOfSquares - 111,
-      numberOfSquares - 333,
-      numberOfSquares - 234,
-      numberOfSquares - 66
-    ];
     updateNextDirection(Direction.none);
-    Timer.periodic(Duration(milliseconds: tickDuration), (timer) {
+    timer = Timer.periodic(Duration(milliseconds: tickDuration), (timer) {
       totalMilliseconds += tickDuration;
+      generateFood();
       if (checkSameValuePixels() && totalMilliseconds > 1000) {
         print("GAME OVER");
+        piece = [numberOfSquares - 185, numberOfSquares - 186];
+        currentDirection = Direction.left;
+        updateNextDirection(Direction.none);
       }
       if (nextDirection == Direction.right) {
         switch (currentDirection) {
@@ -113,7 +117,6 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  void stack() {}
   void bodyFollow() {
     for (int i = piece.length - 1; i > 0; i--) {
       piece[i] = piece[i - 1];
@@ -128,108 +131,177 @@ class _MainScreenState extends State<MainScreen> {
     startGame();
   }
 
-  int counter = 0;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    timer.cancel();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[800],
-      body: Column(
-        children: [
-          Expanded(
-            flex: 5,
-            child: GridView.builder(
-              itemCount: numberOfSquares,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 20),
-              itemBuilder: (context, index) {
-                MyPixel currentPixel = MyPixel();
-                if (piece.contains(index)) {
-                  currentPixel.color = Colors.white;
-                  // if (piece[0] == index) {
-                  //   currentPixel.color = Colors.yellow;
-                  // }
-                } else if (food.contains(index)) {
-                  currentPixel.color = Colors.red;
-                } else if (walls.contains(index)) {
-                  currentPixel.color = Colors.brown[900];
-                } else {
-                  currentPixel.color = Colors.black;
-                }
-
-                // if (checkSameValuePixels()) {
-                //   print("GAME OVER $counter");
-                //   counter++;
-                // }
-
-                if (piece.contains(index) && walls.contains(index)) {
-                  gameOver = true;
-                }
-
-                if (piece.contains(index) && food.contains(index)) {
-                  switch (currentDirection) {
-                    case Direction.none:
-                      break;
-                    case Direction.left:
-                      piece.add(piece[piece.length - 1] + 1);
-
-                      break;
-                    case Direction.right:
-                      piece.add(piece[piece.length - 1] - 1);
-
-                      break;
-                    case Direction.up:
-                      piece.add(piece[piece.length - 1] + 20);
-
-                      break;
-                    case Direction.down:
-                      piece.add(piece[piece.length - 1] - 20);
-
-                      break;
-                  }
-                  food.remove(index);
-                }
-                return currentPixel;
-              },
-            ),
-          ),
-          Expanded(
-            child: Container(
-              child: Center(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    MyButton(
-                      icon: Center(
-                        child: Icon(
-                          Icons.arrow_back_ios,
-                          color: Colors.white,
-                          size: 40,
+      body: SafeArea(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Container(
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Text(
+                              "SCORE:  ",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 30,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            score.toString(),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 30,
+                            ),
+                          ),
+                        ],
+                      ),
+                      InkWell(
+                        onTap: () {
+                          timer.cancel();
+                          exit(0);
+                        },
+                        child: Container(
+                          margin: EdgeInsets.only(right: 20),
+                          height: MediaQuery.of(context).size.height * 0.05,
+                          width: MediaQuery.of(context).size.height * 0.05,
+                          color: Colors.red,
+                          child: Icon(
+                            Icons.close,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
-                      function: () {
-                        updateNextDirection(Direction.left);
-                      },
-                      text: "L E F T",
-                    ),
-                    MyButton(
-                      function: () {
-                        updateNextDirection(Direction.right);
-                      },
-                      icon: Center(
-                        child: Icon(
-                          Icons.arrow_forward_ios,
-                          color: Colors.white,
-                          size: 40,
-                        ),
-                      ),
-                      text: "R I G H T",
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
-          )
-        ],
+            Expanded(
+              flex: 6,
+              child: GridView.builder(
+                itemCount: numberOfSquares,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 20),
+                itemBuilder: (context, index) {
+                  MyPixel currentPixel = MyPixel();
+                  if (piece.contains(index)) {
+                    currentPixel.color = Colors.white;
+                    // if (piece[0] == index) {
+                    //   currentPixel.color = Colors.yellow;
+                    // }
+                  } else if (food.contains(index)) {
+                    currentPixel.color = Colors.red;
+                  } else if (walls.contains(index)) {
+                    currentPixel.color = Colors.brown[900];
+                  } else {
+                    currentPixel.color = Colors.black;
+                  }
+
+                  // if (checkSameValuePixels()) {
+                  //   print("GAME OVER $counter");
+                  //   counter++;
+                  // }
+
+                  if (piece.contains(index) && walls.contains(index)) {
+                    restartGame();
+
+                    // Navigator.pop(context);
+                    //
+                    // Navigator.push(
+                    //   context,
+                    //   MaterialPageRoute(builder: (context) => GameOverScreen()),
+                    // );
+
+                    //Navigate towards GameOver Screen
+                  }
+
+                  if (piece.contains(index) && food.contains(index)) {
+                    switch (currentDirection) {
+                      case Direction.none:
+                        break;
+                      case Direction.left:
+                        piece.insert(0, piece[0] - 1);
+
+                        break;
+                      case Direction.right:
+                        piece.insert(0, piece[0] + 1);
+
+                        break;
+                      case Direction.up:
+                        piece.insert(0, piece[0] - 20);
+
+                        break;
+                      case Direction.down:
+                        piece.insert(0, piece[0] + 20);
+
+                        break;
+                    }
+                    food.remove(index);
+                    score += 50;
+                    tickDuration = (tickDuration * 0.95).toInt();
+                    print(tickDuration.toDouble());
+                  }
+                  return currentPixel;
+                },
+              ),
+            ),
+            Expanded(
+              flex: 1,
+              child: Container(
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      MyButton(
+                        icon: Center(
+                          child: Icon(
+                            Icons.arrow_back_ios,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                        function: () {
+                          updateNextDirection(Direction.left);
+                        },
+                        text: "L E F T",
+                      ),
+                      MyButton(
+                        function: () {
+                          updateNextDirection(Direction.right);
+                        },
+                        icon: Center(
+                          child: Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.white,
+                            size: 40,
+                          ),
+                        ),
+                        text: "R I G H T",
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -271,5 +343,28 @@ class _MainScreenState extends State<MainScreen> {
     for (int i = 20; i < numberOfSquares; i += 20) {
       walls.add(i);
     }
+  }
+
+  void generateFood() {
+    Random random = Random();
+    int randomNum, seed;
+    seed = random.nextInt(100);
+    do {
+      randomNum = random.nextInt(numberOfSquares);
+    } while (walls.contains(randomNum) && food.contains(randomNum));
+
+    if (!walls.contains(randomNum) && !food.contains(randomNum) && food.length < 4 && seed < 18) {
+      food.add(randomNum);
+    }
+  }
+
+  void restartGame() {
+    gameOver = true;
+    piece.clear();
+    food.clear();
+
+    piece = [numberOfSquares - 185, numberOfSquares - 186];
+    currentDirection = Direction.left;
+    score = 0;
   }
 }
