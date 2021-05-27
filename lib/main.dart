@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:mucho_invader/screens/main_screen.dart';
+import 'package:mucho_invader/screens/menu_screen.dart';
 
 void main() {
   runApp(MyApp());
@@ -14,9 +14,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: SafeArea(
-        child: MainScreen(
-          title: 'Flutter Demo Home Page',
-        ),
+        child: MenuScreen(),
       ),
     );
   }
