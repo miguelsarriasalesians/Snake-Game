@@ -1,8 +1,8 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_restart/flutter_restart.dart';
 import 'package:mucho_invader/widgets/my_button.dart';
 import 'package:mucho_invader/widgets/my_pixel.dart';
 
@@ -32,6 +32,10 @@ class _MainScreenState extends State<MainScreen> {
   List<int> landed = [];
   Direction currentDirection = Direction.left;
   Direction nextDirection = Direction.none;
+
+  void _restartApp() async {
+    FlutterRestart.restartApp();
+  }
 
   void startGame() {
     score = 0;
@@ -176,7 +180,8 @@ class _MainScreenState extends State<MainScreen> {
                       InkWell(
                         onTap: () {
                           timer.cancel();
-                          exit(0);
+                          _restartApp();
+                          // exit(0);
                         },
                         child: Container(
                           margin: EdgeInsets.only(right: 20),
