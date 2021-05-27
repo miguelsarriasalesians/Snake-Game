@@ -20,16 +20,21 @@ class _MainScreenState extends State<MainScreen> {
   int tickDuration = 250;
   List<int> piece = [];
   List<int> food = [];
+  List<int> walls = [];
+  bool gameOver = false;
+  int totalMilliseconds = 0;
+  int numberSquaresPerLine = 20;
 
   List<int> landed = [];
   Direction currentDirection = Direction.left;
   Direction nextDirection = Direction.none;
 
   void startGame() {
-    piece = [numberOfSquares - 2, numberOfSquares - 3, numberOfSquares - 4];
+    generateWalls();
+    gameOver = false;
+    piece = [numberOfSquares - 185, numberOfSquares - 186, numberOfSquares - 187];
 
     food = [
-      numberOfSquares - 5,
       numberOfSquares - 299,
       numberOfSquares - 111,
       numberOfSquares - 333,
@@ -38,6 +43,10 @@ class _MainScreenState extends State<MainScreen> {
     ];
     updateNextDirection(Direction.none);
     Timer.periodic(Duration(milliseconds: tickDuration), (timer) {
+      totalMilliseconds += tickDuration;
+      if (checkSameValuePixels() && totalMilliseconds > 1000) {
+        print("GAME OVER");
+      }
       if (nextDirection == Direction.right) {
         switch (currentDirection) {
           case Direction.none:
@@ -119,6 +128,8 @@ class _MainScreenState extends State<MainScreen> {
     startGame();
   }
 
+  int counter = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -139,12 +150,19 @@ class _MainScreenState extends State<MainScreen> {
                   // }
                 } else if (food.contains(index)) {
                   currentPixel.color = Colors.red;
+                } else if (walls.contains(index)) {
+                  currentPixel.color = Colors.brown[900];
                 } else {
                   currentPixel.color = Colors.black;
                 }
 
-                if (checkSameValuePixels()) {
-                  print("GAME OVER");
+                // if (checkSameValuePixels()) {
+                //   print("GAME OVER $counter");
+                //   counter++;
+                // }
+
+                if (piece.contains(index) && walls.contains(index)) {
+                  gameOver = true;
                 }
 
                 if (piece.contains(index) && food.contains(index)) {
@@ -233,5 +251,25 @@ class _MainScreenState extends State<MainScreen> {
       list.add(piece[i]);
     }
     return result;
+  }
+
+  void generateWalls() {
+    //Muro superior
+    for (int i = 0; i < numberSquaresPerLine; i++) {
+      walls.add(i);
+    }
+    //Muro inferior
+    int lastLineSecondPixel = numberOfSquares - (numberSquaresPerLine - 1);
+    for (int i = lastLineSecondPixel; i < lastLineSecondPixel + numberSquaresPerLine - 2; i++) {
+      walls.add(i);
+    }
+    //Muro derecha
+    for (int i = 19; i < numberOfSquares; i += 20) {
+      walls.add(i);
+    }
+    //Muro izquierda
+    for (int i = 20; i < numberOfSquares; i += 20) {
+      walls.add(i);
+    }
   }
 }
